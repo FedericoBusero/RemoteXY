@@ -1,6 +1,6 @@
 /* RemoteXY.h 
    A RemoteXY Library - Remote device control
-   version 2.3.4   
+   version 2.3.4ESP32   
    ===========================================================
    For use RemoteXY library visit website http://remotexy.com
    This website will help you use the library for configuring 
@@ -30,6 +30,10 @@
     #define REMOTEXY_MODE__ESP8266WIFI_LIB_POINT 
     #define REMOTEXY_MODE__ESP8266WIFI_LIB_CLOUD 
 
+   Only ESP32 boards:
+    #define	REMOTEXY_MODE__ESP32_BT
+    #define	REMOTEXY_MODE__ESP32_BLE
+
    Parameters depending on the selected mode (for example):
     #define REMOTEXY_SERIAL Serial  // for Hardware Serial
     #define REMOTEXY_SERIAL_SPEED 115200 
@@ -43,6 +47,7 @@
     #define REMOTEXY_CLOUD_SERVER "cloud.remotexy.com" // for Cloud
     #define REMOTEXY_CLOUD_PORT 6376  // for Cloud
     #define REMOTEXY_ACCESS_PASSWORD "1" 
+    #define REMOTEXY_BT_DEVICENAME "RemoteXY" // for ESP32 BT & BLE
 
    Debug log info on 115200 (define before include this library):
     #define REMOTEXY__DEBUGLOGS Serial
@@ -78,6 +83,9 @@
 #elif defined(REMOTEXY_MODE__SOFTSERIAL) || defined(REMOTEXY_MODE__SOFTWARESERIAL) || defined(REMOTEXY_MODE__HC05_SOFTSERIAL)
   #define REMOTEXY_MOD__SERIAL
   #define REMOTEXY_PORT__SOFTSERIAL
+#elif defined(REMOTEXY_MODE__ESP32_BT)
+  #define REMOTEXY_MOD__SERIAL
+  #define REMOTEXY_PORT__ESP32_BT
 #elif defined(REMOTEXY_MODE__ESP8266_HARDSERIAL_POINT) || defined(REMOTEXY_MODE__ESP8266POINT_HARDSERIAL)
   #define REMOTEXY_MOD__ESP8266
   #define REMOTEXY_WIFI__POINT
@@ -115,6 +123,8 @@
 #elif defined(REMOTEXY_MODE__ESP8266WIFI_LIB_CLOUD)
   #define REMOTEXY_MOD__ESP8266WIFI_LIB_CLOUD
   #define REMOTEXY_CLOUD
+#elif defined(REMOTEXY_MODE__ESP32_BLE)
+  #define REMOTEXY_MOD__ESP32_BLE_LIB
 #else
   #error RemoteXY mode does not defined or defined error: REMOTEXY_MODE__XXXXXXX 
 #endif
@@ -146,6 +156,8 @@
   #include "modules/esp8266wifi.h" 
 #elif defined(REMOTEXY_MOD__ESP8266WIFI_LIB_CLOUD)
   #include "modules/esp8266wifi_cloud.h" 
+#elif defined(REMOTEXY_MOD__ESP32_BLE_LIB)
+  #include "modules/esp32_ble.h" 
 #endif 
 
 #ifndef REMOTEXY_ACCESS_PASSWORD 

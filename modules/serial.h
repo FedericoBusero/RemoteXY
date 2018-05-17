@@ -18,6 +18,11 @@ public:
     initSerial (_serialRx, _serialTx, _serialSpeed);
     init (_conf, _var, _accessPassword); 
   }
+#elif defined(REMOTEXY_PORT__ESP32_BT)
+  CRemoteXY (const void * _conf, void * _var, const char * _accessPassword, const char * _btDeviceName) {
+    initSerial (_btDeviceName);
+    init (_conf, _var, _accessPassword); 
+  }     
 #endif
 
   protected:
@@ -52,6 +57,8 @@ public:
 #define RemoteXY_Init() remotexy = new CRemoteXY (RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, &REMOTEXY_SERIAL, REMOTEXY_SERIAL_SPEED)
 #elif defined(REMOTEXY_PORT__SOFTSERIAL)
 #define RemoteXY_Init() remotexy = new CRemoteXY (RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, REMOTEXY_SERIAL_RX, REMOTEXY_SERIAL_TX, REMOTEXY_SERIAL_SPEED)
+#elif defined(REMOTEXY_PORT__ESP32_BT)
+#define RemoteXY_Init() remotexy = new CRemoteXY (RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD,  REMOTEXY_BT_DEVICENAME)
 #endif
 
 #endif //_REMOTEXY_MOD_SERIAL_H_
