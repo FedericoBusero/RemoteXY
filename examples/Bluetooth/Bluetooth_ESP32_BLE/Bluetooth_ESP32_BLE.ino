@@ -1,3 +1,26 @@
+/*
+  RemoteXY example. 
+  Smartphone connect via BLE on ESP32.
+  This shows an example of using the library RemoteXY.
+  In the example you can control the LED pin 2 using the button on the 
+  smartphone. The example uses the BluetoothSerial library which is a standard 
+  library in the Arduino IDE on ESP32. 
+  
+  Download the mobile app from the 
+  website: http://remotexy.com/download/ for connect this sketch.
+  
+  Use the website http://remotexy.com/ to create your own management 
+  interface your arduino with your smartphone or tablet.
+  You can create different management interfaces. Use buttons, 
+  switches, sliders, joysticks (g-sensor) all colors and sizes 
+  in its interface. Next, you will be able to get the sample 
+  code for arduino to use your interface for control from a 
+  smartphone or tablet. You will not need to re-install the 
+  android app, as it will determine which interface you have 
+  downloaded the arduino.
+  
+*/
+
 ///////////////////////////////////////////// 
 //        RemoteXY include library         // 
 ///////////////////////////////////////////// 
