@@ -44,7 +44,7 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
                               CHARACTERISTIC_UUID_RXTX,
                               BLECharacteristic::PROPERTY_READ |
                               BLECharacteristic::PROPERTY_NOTIFY |
-                              BLECharacteristic::PROPERTY_WRITE_NR // also PROPERTY_WRITE is possible
+                              BLECharacteristic::PROPERTY_WRITE_NR 
                             );
 
       BLE2902 *ble2902 = new BLE2902();
