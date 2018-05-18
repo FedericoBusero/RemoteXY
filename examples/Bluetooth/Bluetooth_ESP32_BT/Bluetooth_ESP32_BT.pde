@@ -26,27 +26,27 @@
 //        RemoteXY include library         // 
 ///////////////////////////////////////////// 
 
-/* RemoteXY select connection mode and include library */ 
+// RemoteXY select connection mode and include library 
 #define REMOTEXY_MODE__ESP32_BT 
 #include <BluetoothSerial.h> 
 #include <RemoteXY.h> 
 
-/* RemoteXY connection settings */ 
+// RemoteXY connection settings
 #define REMOTEXY_BT_DEVICENAME "RemoteXY"
 
-/* RemoteXY configurate  */ 
+// RemoteXY configurate
 unsigned char RemoteXY_CONF[] = 
   { 1,0,11,0,1,5,1,0,21,2
   ,59,59,2,88,0 }; 
    
-/* this structure defines all the variables of your control interface */ 
+// this structure defines all the variables of your control interface
 struct { 
 
-    /* input variable */
-  unsigned char button_1; /* =1 if button pressed, else =0 */
+    // input variable
+  unsigned char button_1; // =1 if button pressed, else =0
 
-    /* other variable */
-  unsigned char connect_flag;  /* =1 if wire connected, else =0 */
+    // other variable
+  unsigned char connect_flag;  // =1 if wire connected, else =0
 
 } RemoteXY; 
 
