@@ -35,14 +35,11 @@ class CRemoteXY : public CRemoteXY_Serial {
     uint16_t sendBufferCount;
     uint16_t sendBytesAvailable;
 
-
     void sendStart (uint16_t len) {
       sendBytesAvailable = len;
       sendBufferCount = 0;
     }
-#endif
 
-#ifdef REMOTEXY_PORT__ESP32_BT
     void sendByte (uint8_t b) {
       sendBuffer[sendBufferCount++] = b;
       sendBytesAvailable--;
