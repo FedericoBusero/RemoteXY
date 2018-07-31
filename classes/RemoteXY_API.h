@@ -27,7 +27,7 @@ class CRemoteXY_API {
   uint16_t inputLength;
   uint16_t confLength;
   uint8_t *connect_flag;
-
+  uint8_t *changed_flag;	// Flag to indicate when input variables have changed
   uint8_t *receiveBuffer;
   uint16_t receiveBufferLength;
   uint16_t receiveIndex;
@@ -70,7 +70,10 @@ class CRemoteXY_API {
     uint16_t varLength = outputLength+inputLength;
     connect_flag = var+varLength;
     *connect_flag = 0;   
-        
+    
+	changed_flag = var+varLength+1;
+	*changed_flag = 0;
+	    
     accessPassword = (uint8_t*)_accessPassword;
 
     receiveBufferLength=inputLength;
@@ -246,14 +249,14 @@ class CRemoteXY_API {
       p++;
     }        
     receiveIndex=0;
-  }  
-  
-  uint8_t handleReceivePackage () {
+  }
+    
+uint8_t handleReceivePackage () {
     uint8_t command;
     uint16_t i;
     uint16_t length;
     uint8_t *p, *kp;
-       
+	   
     length = receiveBuffer[1]|(receiveBuffer[2]>>8); 
     length-=6;
     command = receiveBuffer[3];
@@ -298,8 +301,15 @@ class CRemoteXY_API {
           p=receiveBuffer+4;
           kp=var;
           i= inputLength;
-          while (i--) *kp++=*p++;
-        }
+          while (i--) 
+		  {
+			if (*kp != *p)
+			{
+			  *kp++=*p++;
+			  *changed_flag = 1;
+			}
+		  }
+		}
         sendPackage (command, 0, 0, 0);
         break;   
       case 0xC0:  
