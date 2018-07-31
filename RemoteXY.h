@@ -33,6 +33,7 @@
    Only ESP32 boards:
     #define	REMOTEXY_MODE__ESP32_BT
     #define	REMOTEXY_MODE__ESP32_BLE
+	#define REMOTEXY_MODE__ESP32WIFI_LIB
 
    Parameters depending on the selected mode (for example):
     #define REMOTEXY_SERIAL Serial  // for Hardware Serial
@@ -125,6 +126,8 @@
   #define REMOTEXY_CLOUD
 #elif defined(REMOTEXY_MODE__ESP32_BLE)
   #define REMOTEXY_MOD__ESP32_BLE_LIB
+#elif defined(REMOTEXY_MODE__ESP32WIFI_LIB)
+  #define REMOTEXY_MOD__ESP32WIFI_LIB  
 #else
   #error RemoteXY mode does not defined or defined error: REMOTEXY_MODE__XXXXXXX 
 #endif
@@ -157,7 +160,9 @@
 #elif defined(REMOTEXY_MOD__ESP8266WIFI_LIB_CLOUD)
   #include "modules/esp8266wifi_cloud.h" 
 #elif defined(REMOTEXY_MOD__ESP32_BLE_LIB)
-  #include "modules/esp32_ble.h" 
+  #include "modules/esp32_ble.h"
+#elif defined(REMOTEXY_MOD__ESP32WIFI_LIB)
+  #include "modules/esp32wifi.h"   
 #endif 
 
 #ifndef REMOTEXY_ACCESS_PASSWORD 
