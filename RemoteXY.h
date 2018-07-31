@@ -34,6 +34,7 @@
     #define	REMOTEXY_MODE__ESP32_BT
     #define	REMOTEXY_MODE__ESP32_BLE
 	#define REMOTEXY_MODE__ESP32WIFI_LIB
+	#define REMOTEXY_MODE__ESP32WIFI_LIB_POINT
 
    Parameters depending on the selected mode (for example):
     #define REMOTEXY_SERIAL Serial  // for Hardware Serial
@@ -68,7 +69,8 @@
      - Fixed a bug where the length of all input variables more than 256;
      - Fixed a bug where millis() overflow in 50 days;
      - Fixed some bugs;
-          
+   version 2.3.5
+     - Support for ESP32 WiFi       
 */
 
 #ifndef _REMOTEXY_H_
@@ -128,6 +130,9 @@
   #define REMOTEXY_MOD__ESP32_BLE_LIB
 #elif defined(REMOTEXY_MODE__ESP32WIFI_LIB)
   #define REMOTEXY_MOD__ESP32WIFI_LIB  
+#elif defined(REMOTEXY_MODE__ESP32WIFI_LIB_POINT) || defined(REMOTEXY_MODE__ESP32WIFIPOINT_LIB)
+  #define REMOTEXY_MOD__ESP32WIFI_LIB
+  #define REMOTEXY_WIFI__POINT
 #else
   #error RemoteXY mode does not defined or defined error: REMOTEXY_MODE__XXXXXXX 
 #endif

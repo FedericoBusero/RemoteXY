@@ -28,6 +28,7 @@ Supported communication modules:
 - Bluetooth: HC-05, HC-06, HM-10 or compatible; BT Classic and BLE on ESP32
 - WiFi ESP8266;
 - Ethernet Shield W5100;
+- WiFi ESP32;
 
 Supported mobile OS:
 - Android;
