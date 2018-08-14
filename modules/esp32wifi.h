@@ -157,6 +157,7 @@ class CRemoteXY : public CRemoteXY_API {
         return b;
       }
     }
+	return 0;
   }
   
   uint8_t availableByte () {   
