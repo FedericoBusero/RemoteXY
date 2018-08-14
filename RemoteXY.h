@@ -54,6 +54,9 @@
    Debug log info on 115200 (define before include this library):
     #define REMOTEXY__DEBUGLOGS Serial
 
+   Flag to indicate when something has been changed (define before include this library):
+  	#define REMOTEXY_CHANGED_FLAG
+
    = Version history ========================================
 
    version 2.2.5   
@@ -70,7 +73,8 @@
      - Fixed a bug where millis() overflow in 50 days;
      - Fixed some bugs;
    version 2.3.5
-     - Support for ESP32 WiFi       
+     - Support for ESP32 WiFi;
+	 - Support for changed_flag;       
 */
 
 #ifndef _REMOTEXY_H_

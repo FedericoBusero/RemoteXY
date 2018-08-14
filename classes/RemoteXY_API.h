@@ -27,7 +27,9 @@ class CRemoteXY_API {
   uint16_t inputLength;
   uint16_t confLength;
   uint8_t *connect_flag;
-  uint8_t *changed_flag;	// Flag to indicate when input variables have changed
+#ifdef REMOTEXY_CHANGED_FLAG  
+  uint8_t *changed_flag;	// Pointer to flag to indicate when input variables have changed
+#endif  
   uint8_t *receiveBuffer;
   uint16_t receiveBufferLength;
   uint16_t receiveIndex;
@@ -43,8 +45,8 @@ class CRemoteXY_API {
   virtual void closeConnection () {};
   virtual void sendStart (uint16_t len) {};
   virtual void sendByte (uint8_t b) {};
-  virtual uint8_t receiveByte () {};
-  virtual uint8_t availableByte () {};  
+  virtual uint8_t receiveByte () {return 0;};
+  virtual uint8_t availableByte () {return 0;};
   
   public:
   void init (const void * _conf, void * _var, const char * _accessPassword) {
@@ -70,10 +72,10 @@ class CRemoteXY_API {
     uint16_t varLength = outputLength+inputLength;
     connect_flag = var+varLength;
     *connect_flag = 0;   
-    
+#ifdef REMOTEXY_CHANGED_FLAG    
 	changed_flag = var+varLength+1;
 	*changed_flag = 0;
-	    
+#endif	    
     accessPassword = (uint8_t*)_accessPassword;
 
     receiveBufferLength=inputLength;
@@ -303,11 +305,21 @@ uint8_t handleReceivePackage () {
           i= inputLength;
           while (i--) 
 		  {
+#ifdef REMOTEXY_CHANGED_FLAG
 			if (*kp != *p)
 			{
+			  // Byte has been changed	
 			  *kp++=*p++;
 			  *changed_flag = 1;
 			}
+			else
+			{
+			  kp++;
+			  p++;
+			}
+#else
+			*kp++=*p++;
+#endif
 		  }
 		}
         sendPackage (command, 0, 0, 0);
