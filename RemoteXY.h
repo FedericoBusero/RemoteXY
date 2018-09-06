@@ -33,6 +33,8 @@
    Only ESP32 boards:
     #define	REMOTEXY_MODE__ESP32_BT
     #define	REMOTEXY_MODE__ESP32_BLE
+	#define REMOTEXY_MODE__ESP32WIFI_LIB
+	#define REMOTEXY_MODE__ESP32WIFI_LIB_POINT
 
    Parameters depending on the selected mode (for example):
     #define REMOTEXY_SERIAL Serial  // for Hardware Serial
@@ -52,6 +54,9 @@
    Debug log info on 115200 (define before include this library):
     #define REMOTEXY__DEBUGLOGS Serial
 
+   Flag to indicate when something has been changed (define before include this library):
+  	#define REMOTEXY_CHANGED_FLAG
+
    = Version history ========================================
 
    version 2.2.5   
@@ -67,7 +72,9 @@
      - Fixed a bug where the length of all input variables more than 256;
      - Fixed a bug where millis() overflow in 50 days;
      - Fixed some bugs;
-          
+   version 2.3.5
+     - Support for ESP32 WiFi;
+	 - Support for changed_flag;       
 */
 
 #ifndef _REMOTEXY_H_
@@ -125,6 +132,11 @@
   #define REMOTEXY_CLOUD
 #elif defined(REMOTEXY_MODE__ESP32_BLE)
   #define REMOTEXY_MOD__ESP32_BLE_LIB
+#elif defined(REMOTEXY_MODE__ESP32WIFI_LIB)
+  #define REMOTEXY_MOD__ESP32WIFI_LIB  
+#elif defined(REMOTEXY_MODE__ESP32WIFI_LIB_POINT) || defined(REMOTEXY_MODE__ESP32WIFIPOINT_LIB)
+  #define REMOTEXY_MOD__ESP32WIFI_LIB
+  #define REMOTEXY_WIFI__POINT
 #else
   #error RemoteXY mode does not defined or defined error: REMOTEXY_MODE__XXXXXXX 
 #endif
@@ -157,7 +169,9 @@
 #elif defined(REMOTEXY_MOD__ESP8266WIFI_LIB_CLOUD)
   #include "modules/esp8266wifi_cloud.h" 
 #elif defined(REMOTEXY_MOD__ESP32_BLE_LIB)
-  #include "modules/esp32_ble.h" 
+  #include "modules/esp32_ble.h"
+#elif defined(REMOTEXY_MOD__ESP32WIFI_LIB)
+  #include "modules/esp32wifi.h"   
 #endif 
 
 #ifndef REMOTEXY_ACCESS_PASSWORD 
