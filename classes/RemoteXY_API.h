@@ -15,7 +15,14 @@
 #define REMOTEXY_CLOUD_RECONNECT_TIMEOUT 30000
 #define REMOTEXY_CLOUD_ECHO_TIMEOUT 60000
 
+// cloud states
+#define REMOTEXY_CLOUD_STATE_STOP 0 
+#define REMOTEXY_CLOUD_STATE_WAIT_RECONNECT 1 
+#define REMOTEXY_CLOUD_STATE_WAIT_NEXT_TRY 2 
+#define REMOTEXY_CLOUD_STATE_CONNECTION 3
+#define REMOTEXY_CLOUD_STATE_REGISTRATION 6 
 #define REMOTEXY_CLOUD_STATE_WORKING 7
+
 
 class CRemoteXY_API {
   protected:
@@ -83,30 +90,21 @@ class CRemoteXY_API {
     p = var;
     i = varLength;
     while (i--) *p++=0;   
-    receiveIndex=0;
-    receiveCRC=initCRC ();
-    wireTimeOut=0;
-  
+    
+    resetWire ();
+ 
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.begin (REMOTEXY__DEBUGLOGS_SPEED);
-    REMOTEXY__DEBUGLOGS.println("\r\n\r\nRemoteXY started...");
+    DEBUGLOGS_init ();
+    DEBUGLOGS_write("RemoteXY started");
 #endif
   
     moduleRunning = initModule ();
 #if defined(REMOTEXY__DEBUGLOGS)
-    if (moduleRunning) {
-      REMOTEXY__DEBUGLOGS.println("\r\nRemoteXY runing");
-    }
-    else {
-      REMOTEXY__DEBUGLOGS.println ("\r\nModule not available, RemoteXY stoped");
-    }
-    
+    if (!moduleRunning) {
+      DEBUGLOGS_write ("Wire module not available, RemoteXY stoped");
+    }    
 #endif     
     
-    
-#if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.print("\r\n<- ");  
-#endif
   }
 
   
@@ -115,7 +113,15 @@ class CRemoteXY_API {
     return pgm_read_byte_near (p);                                     
   }
   
-    
+  private:
+  void resetWire () {
+    receiveIndex=0; 
+    receiveCRC=initCRC ();
+    *connect_flag = 0;    
+    wireTimeOut= millis();
+  }
+  
+      
   public:
   void handler () {
     uint8_t *p, *kp;
@@ -141,7 +147,7 @@ class CRemoteXY_API {
         searchStartByte (1); //receiveBuffer overflow
       }
       while (true) {
-        if (receiveIndex<6) return;
+        if (receiveIndex<6) break;
         packageLength = receiveBuffer[1]|(receiveBuffer[2]<<8);
         if (packageLength>receiveBufferLength) searchStartByte (1); // error
         else if (packageLength<6) searchStartByte (1); // error
@@ -173,11 +179,7 @@ class CRemoteXY_API {
     }  
     
     if (millis() - wireTimeOut > REMOTEXY_TIMEOUT) {
-      if (*connect_flag) {      
-        receiveIndex=0; 
-        receiveCRC=initCRC ();
-      }     
-      *connect_flag = 0;
+      resetWire ();
     }      
   }
   
@@ -206,9 +208,6 @@ class CRemoteXY_API {
     uint16_t crc = initCRC ();
     uint16_t packageLength = length+6;
     sendStart (packageLength);
-#if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.print("\r\n-> ");  
-#endif
     sendByteUpdateCRC (REMOTEXY_PACKAGE_START_BYTE, &crc);
     sendByteUpdateCRC (packageLength, &crc);
     sendByteUpdateCRC (packageLength>>8, &crc);
@@ -221,9 +220,6 @@ class CRemoteXY_API {
     }
     sendByte (crc);  
     sendByte (crc>>8);
-#if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.print("\r\n<- ");  
-#endif 
   }
   
   private:  
@@ -310,18 +306,15 @@ class CRemoteXY_API {
         sendPackage (command, 0, 0, 0);
         break;   
       case 0x11:
-        if (cloudState==6) {
+        if (cloudState==REMOTEXY_CLOUD_STATE_REGISTRATION) {
           setCloudState (REMOTEXY_CLOUD_STATE_WORKING);
-#if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println("\r\nCloud server registered");
-          REMOTEXY__DEBUGLOGS.print("\r\n<- ");  
-#endif
         }
         break;   
 #endif //REMOTEXY_CLOUD       
       default:
         return 0; 
     }  
+    
     wireTimeOut=millis();    
 #if defined(REMOTEXY_CLOUD)  
     if (cloudState==REMOTEXY_CLOUD_STATE_WORKING) {
@@ -331,25 +324,25 @@ class CRemoteXY_API {
     return 1;
   }
   
+  
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC DOCUMENTED FUNCTIONS
+  
+  public:
+  uint8_t isConnected () {
+    return *connect_flag;
+  }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CLOUD SUPPORT 
+
 
 #if defined(REMOTEXY_CLOUD)  
-// CLOUD SUPPORT
   protected:
   char *cloudServer;
   uint16_t cloudPort;
   uint8_t cloudRegistPackage[38];
-  
-/*
-  cloudState =
- 0 - stop, 
- 1 - wait reconnect, 
- 2 - wait try, 
- 3 - start connection
- 4 - connecting to server, 
- 5 - start registeration, 
- 6 - registering to cloud, 
- 7 - working (REMOTEXY_CLOUD_STATE_WORKING)
- */
   uint8_t cloudState;   
   uint32_t cloudTimeOut;
 
@@ -376,107 +369,217 @@ class CRemoteXY_API {
     len = (uint16_t*)(p+2);     
     *len = receiveBufferLength;  
     
-    cloudState = 0;
+    cloudState = REMOTEXY_CLOUD_STATE_STOP;
   }
   
   public:
   void startCloudConnection () {
-    if (cloudState<3) {
-      setCloudState (3);
+    if (cloudState<REMOTEXY_CLOUD_STATE_CONNECTION) {
+      setCloudState (REMOTEXY_CLOUD_STATE_CONNECTION);
     }
   }  
   
   public:
   void stopCloud () {
     closeConnection ();
-    if (cloudState<3) return;
+    resetWire ();
+    if (cloudState<REMOTEXY_CLOUD_STATE_CONNECTION) return;
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println("\r\nCloud server disconnected");
-    REMOTEXY__DEBUGLOGS.println("Waiting for reconnection...");
-    setCloudState (1);
+    DEBUGLOGS_write("Cloud server disconnected");
 #endif
+    setCloudState (REMOTEXY_CLOUD_STATE_WAIT_RECONNECT);
   }
   
   private:
   void setCloudState (uint8_t state) {
     cloudState = state;
     cloudTimeOut = millis(); 
-    /*
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.print("\r\nNew state ");
-    REMOTEXY__DEBUGLOGS.println(cloudState);
+    switch (state) {
+      case REMOTEXY_CLOUD_STATE_WAIT_RECONNECT: 
+        DEBUGLOGS_write("Waiting to reconnect to the cloud server");
+        break;
+      case REMOTEXY_CLOUD_STATE_WAIT_NEXT_TRY: 
+        DEBUGLOGS_write("Waiting to next try to connect to the cloud server");
+        break;
+      case REMOTEXY_CLOUD_STATE_CONNECTION: 
+        DEBUGLOGS_write("Started connecting to cloud server");
+        break;
+      case REMOTEXY_CLOUD_STATE_REGISTRATION: 
+        DEBUGLOGS_write("Waiting for registration on cloud server");
+        break;
+      case REMOTEXY_CLOUD_STATE_WORKING: 
+        DEBUGLOGS_write("Connect to the cloud server successfully");
+        break;
+      default:
+        DEBUGLOGS_write("Unknown cloud state ");
+        REMOTEXY__DEBUGLOGS.print(cloudState);
+        break;
+    }
 #endif
-*/
   }
   
   private:
   void handlerCloud () {
     int8_t res;
     if (!moduleRunning) return;
-    switch (cloudState) {  
-      case 1:  
-        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_RECONNECT_TIMEOUT) {
-          setCloudState (3);          
-        }
+    switch (cloudState) {
+      
+      case REMOTEXY_CLOUD_STATE_WAIT_RECONNECT:  
+        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_RECONNECT_TIMEOUT)
+          setCloudState (REMOTEXY_CLOUD_STATE_CONNECTION);          
         break;
-      case 2:  
-        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_RETRY_TIMEOUT) {
-          setCloudState (3);            
-        }
+        
+      case REMOTEXY_CLOUD_STATE_WAIT_NEXT_TRY:  
+        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_RETRY_TIMEOUT) 
+          setCloudState (REMOTEXY_CLOUD_STATE_CONNECTION);            
         break;
-      case 3:  
+        
+      case REMOTEXY_CLOUD_STATE_CONNECTION:  
         res = connectServerCloud (cloudServer, cloudPort);
-        if (res == 1) {
-          
-#if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println();
-          REMOTEXY__DEBUGLOGS.println("Cloud server connected");
-#endif                 
-          setCloudState (5);   
+        if (res == 1) {          
+          setCloudState (REMOTEXY_CLOUD_STATE_REGISTRATION);   
+          sendPackage (0x11, cloudRegistPackage, 38, 0);
         }
         else if (res == 0) {
-          setCloudState (1); 
 #if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println();
-          REMOTEXY__DEBUGLOGS.println("Cloud server connection error");
-          REMOTEXY__DEBUGLOGS.println("Waiting for reconnection...");
+          DEBUGLOGS_write("Cloud server connection error");          
 #endif         
+          setCloudState (REMOTEXY_CLOUD_STATE_WAIT_RECONNECT); 
         }
         else {
-          setCloudState (2); 
+          setCloudState (REMOTEXY_CLOUD_STATE_WAIT_NEXT_TRY); 
         }
         break;
-      case 4:  
-        setCloudState (5);
-        break;
-      case 5:  
-        sendPackage (0x11, cloudRegistPackage, 38, 0);
-        setCloudState (6);
-        break;
-      case 6:  
-        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_CONNECT_TIMEOUT) {
+        
+      case REMOTEXY_CLOUD_STATE_REGISTRATION:  
+        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_CONNECT_TIMEOUT) 
           stopCloud ();
-        }
         break;
+        
       case REMOTEXY_CLOUD_STATE_WORKING:  
-        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_ECHO_TIMEOUT) {
+        if (millis() - cloudTimeOut > REMOTEXY_CLOUD_ECHO_TIMEOUT) 
           stopCloud ();
-        }
         break;
     }
   } 
   
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC DOCUMENTED FUNCTIONS OF CLOUD
+  
   public:
-  // return value:
-  // if (getCloudState () == REMOTEXY_CLOUD_STATE_WORKING) then the cloud connected, registered and working
-  uint8_t getCloudState () {
-    return cloudState;
+  uint8_t isCloudConnected () {
+    return (cloudState==REMOTEXY_CLOUD_STATE_WORKING ? 1:0);
   }
   
   
 #endif //REMOTEXY_CLOUD
 
+///////////////////////////////////////////////////////////////////////////////
+// DEBUG FUNCTIONS
+
+#if defined(REMOTEXY__DEBUGLOGS)
+  uint8_t debug_flags;
+  uint8_t debug_hexcounter;
+  
+  public:
+  void DEBUGLOGS_init () {
+    debug_flags=0;
+    REMOTEXY__DEBUGLOGS.begin (REMOTEXY__DEBUGLOGS_SPEED);
+    REMOTEXY__DEBUGLOGS.println();
+  }
+
+  public:
+  void DEBUGLOGS_writeTime () {
+    uint32_t d = millis();
+    char s[15];
+    sprintf (s, "[%5ld.%03ld] ",d/1000, d%1000);     
+    REMOTEXY__DEBUGLOGS.println ();    
+    REMOTEXY__DEBUGLOGS.print (s);
+  }
+  
+  public:
+  void DEBUGLOGS_write (char *s) {
+    debug_flags = 0;
+    DEBUGLOGS_writeTime (); 
+    REMOTEXY__DEBUGLOGS.print(s);
+  }
+  
+  public:
+  void DEBUGLOGS_writeInput (char *s) {
+    if ((debug_flags & 0x01)==0) {
+      DEBUGLOGS_writeTime ();
+      REMOTEXY__DEBUGLOGS.print("<- ");
+    }
+    debug_flags = 0x01;   
+    REMOTEXY__DEBUGLOGS.print(s);
+  }
+
+  public:
+  void DEBUGLOGS_writeOutput (char *s) {
+    if ((debug_flags & 0x02)==0) {
+      DEBUGLOGS_writeTime ();
+      REMOTEXY__DEBUGLOGS.print("-> ");
+    }
+    debug_flags = 0x02;   
+    REMOTEXY__DEBUGLOGS.print(s);
+  }
+
+  public:
+  void DEBUGLOGS_writeInputHex (uint8_t b) {
+    if ((debug_flags & 0x01)==0) {
+      DEBUGLOGS_writeTime ();
+      REMOTEXY__DEBUGLOGS.print("<-");
+      debug_hexcounter=0;
+    }
+    debug_flags = 0x01;   
+    DEBUGLOGS_writeHex (b);
+  }
+
+  public:
+  void DEBUGLOGS_writeOutputHex (uint8_t b) {
+    if ((debug_flags & 0x02)==0) {
+      DEBUGLOGS_writeTime ();
+      REMOTEXY__DEBUGLOGS.print("->");
+      debug_hexcounter=0;
+    }
+    debug_flags = 0x02;
+    DEBUGLOGS_writeHex (b);
+  }
+  
+  public:
+  void DEBUGLOGS_writeInputChar (char s) {
+    if ((debug_flags & 0x01)==0) {
+      DEBUGLOGS_writeTime ();
+      REMOTEXY__DEBUGLOGS.print("<- ");
+    }
+    debug_flags = 0x01;   
+    REMOTEXY__DEBUGLOGS.print(s);
+  }
+
+  public:
+  void DEBUGLOGS_writeInputNewString () {
+    debug_flags = 0;
+  }
+  
+  public:
+  void DEBUGLOGS_writeHex (uint8_t b) {
+    debug_hexcounter++;
+    if (debug_hexcounter>16) {
+      REMOTEXY__DEBUGLOGS.println();
+      REMOTEXY__DEBUGLOGS.print("              ");
+      debug_hexcounter=1;
+    }
+    REMOTEXY__DEBUGLOGS.print(' ');
+    REMOTEXY__DEBUGLOGS.print(b>>4, HEX); 
+    REMOTEXY__DEBUGLOGS.print(b&0x0f, HEX); 
     
+    
+    
+  }  
+  
+#endif //REMOTEXY__DEBUGLOGS 
+   
 };
 
 #endif //_REMOTEXY_API_H_

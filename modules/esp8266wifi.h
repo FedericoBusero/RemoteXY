@@ -45,9 +45,8 @@ class CRemoteXY : public CRemoteXY_API {
     WiFi.mode(WIFI_AP);
     WiFi.softAP(wifiSsid, wifiPassword);
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println();
-    REMOTEXY__DEBUGLOGS.print("IP: ");
-    REMOTEXY__DEBUGLOGS.println(WiFi.softAPIP());
+    DEBUGLOGS_write ("IP: ");
+    REMOTEXY__DEBUGLOGS.print (WiFi.softAPIP());
 #endif
 #else    
     /* station */
@@ -56,8 +55,7 @@ class CRemoteXY : public CRemoteXY_API {
     delay(1000);
     
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println();
-    REMOTEXY__DEBUGLOGS.println("Start connecting to access point...");
+    DEBUGLOGS_write("Started connecting to access point...");
 #endif    
 #endif
     client.stop();
@@ -65,7 +63,7 @@ class CRemoteXY : public CRemoteXY_API {
     server->begin();    
     server->setNoDelay(true);
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println("Server started");
+    DEBUGLOGS_write ("Server started");
 #endif
     return 1;
   }
@@ -76,11 +74,9 @@ class CRemoteXY : public CRemoteXY_API {
       wifiStatus = status;
 #if defined(REMOTEXY__DEBUGLOGS)
       if (wifiStatus == WL_CONNECTED) {
-        REMOTEXY__DEBUGLOGS.println();
-        REMOTEXY__DEBUGLOGS.println("Connected to access point");
-        REMOTEXY__DEBUGLOGS.print("IP: ");
-        REMOTEXY__DEBUGLOGS.println(WiFi.localIP());
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write ("Connected to access point");
+        DEBUGLOGS_write ("IP: ");
+        REMOTEXY__DEBUGLOGS.print (WiFi.localIP());
       }
 #endif  
     }
@@ -90,9 +86,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client) {
         resetServerTimeOut ();  // new client
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ();
-        REMOTEXY__DEBUGLOGS.println ("Client connected");
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write ("Client connected");
 #endif
       }
     }
@@ -101,18 +95,14 @@ class CRemoteXY : public CRemoteXY_API {
         if (millis () - serverTimeOut > REMOTEXY_SERVER_TIMEOUT) {
           client.stop ();
 #if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println ();
-          REMOTEXY__DEBUGLOGS.println ("Client stoped by timeout");
-          REMOTEXY__DEBUGLOGS.print ("<-");
+          DEBUGLOGS_write ("Client stoped by timeout");
 #endif
         }
       }
       else {
         client.stop ();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ();
-        REMOTEXY__DEBUGLOGS.println ("Client stoped");
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write ("Client stoped");
 #endif
       }
     }        
@@ -128,8 +118,7 @@ class CRemoteXY : public CRemoteXY_API {
     if (client) {
       if (client.connected()) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
         sendBuffer[sendBufferCount++] = b;
         sendBytesAvailable--;       
@@ -150,8 +139,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         b = client.read();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         resetServerTimeOut ();
         return b;

@@ -15,6 +15,7 @@ const char * AT_ANSWER_OK = "OK";
 const char * AT_ANSWER_SEND_OK = "SEND OK";
 const char * AT_MESSAGE_READY = "ready";
 const char * AT_ANSWER_GO = ">";
+const char * AT_MESSAGE_AT = "AT";
 const char * AT_MESSAGE_CONNECT = "?,CONNECT";
 const char * AT_MESSAGE_CLOSED = "?,CLOSED";
 const char * AT_MESSAGE_CONNECT_FAIL = "?,CONNECT FAIL";
@@ -27,7 +28,8 @@ class CRemoteXY_AT : public CRemoteXY_Serial {
   char bufferAT[AT_BUFFER_STR_LENGTH+1];
   uint8_t bufferATPos;
   char * params[3];
-  uint8_t paramsLength[3];
+  uint8_t paramsLength[3];      
+  uint8_t haveEcho;
     
   protected:
   void initAT () {
@@ -38,30 +40,24 @@ class CRemoteXY_AT : public CRemoteXY_Serial {
   virtual void connectAT () {};
   virtual void readyAT () {};
   virtual void inputDataAT () {};
-  
+ 
   protected:  
   void sendATCommand (const char * command, ...) { 
    
     char *p = (char*) command;
     va_list argptr;
     while (serial->available () > 0) serial->read (); 
-#if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.write ("\r\n->");
-#endif
     va_start (argptr, command);
     while (p) {
       serial->write (p);
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.write (p);
+      DEBUGLOGS_writeOutput (p);
 #endif
       p=va_arg(argptr,char*);
     }
     va_end(argptr);     
     serial->write ("\r\n");
-#if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.write ("\r\n");
-#endif
-  }  
+  }    
   
   protected:  
   uint8_t waitATAnswer (const char * answer, uint16_t delay) {
@@ -74,16 +70,19 @@ class CRemoteXY_AT : public CRemoteXY_Serial {
     
       if (serial->available ()>0) {
         b=serial->read  ();
-#if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.write (b);
-#endif
         if (b==10) continue;
+#if defined(REMOTEXY__DEBUGLOGS)
+        if (b==13) DEBUGLOGS_writeInputNewString ();
+        else DEBUGLOGS_writeInputChar (b);
+#endif
         if (b==13) {
           bufferAT[k++]=0; 
+          bufferATPos=0;
           k=0;
           if (strcmp (bufferAT,answer)==0) return 1;
-          if (strcmp (bufferAT,AT_ANSWER_ERROR)==0) return 0; 
+          if (strcmp (bufferAT,AT_ANSWER_ERROR)==0) return 0;
           if (cmpBufferAT () ==  AT_MESSAGE_READY) return 0;       
+          if (strcmp (bufferAT,AT_MESSAGE_AT)==0) haveEcho=1;
         }
         else {
           if (k<AT_BUFFER_STR_LENGTH) bufferAT[k++]=b;
@@ -96,25 +95,42 @@ class CRemoteXY_AT : public CRemoteXY_Serial {
     return 0;  
   }
 
+  // echo test, returns
+  //  0 - no answer
+  //  1 - no echo
+  //  2 - have echo
+  protected:  
+  uint8_t testATecho () { 
+    haveEcho = 0;
+    sendATCommand ("AT",0);
+    if (!waitATAnswer (AT_ANSWER_OK, 1000)) return 0;
+    return (haveEcho==0?1:2);
+  }
+
+
   protected:
   void readATMessage () {
     uint8_t b;
     while (serial->available ()>0) {
       b=serial->read  ();
-#if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.write (b);
-#endif
       if (b==10) continue;
+#if defined(REMOTEXY__DEBUGLOGS)
+      if (b==13) DEBUGLOGS_writeInputNewString ();
+      else DEBUGLOGS_writeInputChar (b);
+#endif
       if (b==13) {
         bufferAT[bufferATPos]=0;
         bufferATPos=0;
-        if (!cmpBufferAT ()) return;
+         if (!cmpBufferAT ()) return;
       }
       else {
         if (bufferATPos<AT_BUFFER_STR_LENGTH) bufferAT[bufferATPos++]=b;  
         if (b==':') {
           bufferAT[bufferATPos]=0;
           if (strcmpAT (bufferAT,AT_MESSAGE_IPD)==0) {
+#if defined(REMOTEXY__DEBUGLOGS)
+            DEBUGLOGS_writeInputNewString ();
+#endif
             bufferATPos=0;
             inputDataAT ();
             return;
@@ -129,7 +145,7 @@ class CRemoteXY_AT : public CRemoteXY_Serial {
     if (strcmpAT (bufferAT,AT_MESSAGE_CONNECT)==0) {connectAT (); return AT_MESSAGE_CONNECT;}
     if (strcmpAT (bufferAT,AT_MESSAGE_CLOSED)==0) {closedAT (); return AT_MESSAGE_CLOSED;}             
     if (strcmpAT (bufferAT,AT_MESSAGE_CONNECT_FAIL)==0) {closedAT (); return AT_MESSAGE_CONNECT_FAIL;}             
-    if (strcmpAT (bufferAT,AT_MESSAGE_READY)==0) {readyAT (); return AT_MESSAGE_READY;}   
+    if (strcmpAT (bufferAT,AT_MESSAGE_READY)==0) {readyAT (); return AT_MESSAGE_READY;}    
     return 0;           
   }  
   

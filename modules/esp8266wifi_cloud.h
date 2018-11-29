@@ -43,8 +43,7 @@ class CRemoteXY : public CRemoteXY_API {
     WiFi.begin(wifiSsid, wifiPassword);
     delay(1000);
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println();
-    REMOTEXY__DEBUGLOGS.println("Start connecting to access point...");
+    DEBUGLOGS_write("Started connecting to access point");
 #endif    
 
     return 1;
@@ -56,11 +55,9 @@ class CRemoteXY : public CRemoteXY_API {
       wifiStatus = status;
       if (wifiStatus == WL_CONNECTED) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println();
-        REMOTEXY__DEBUGLOGS.println("Connected to access point");
-        REMOTEXY__DEBUGLOGS.print("IP: ");
-        REMOTEXY__DEBUGLOGS.println(WiFi.localIP());
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write("Connected to access point");
+        DEBUGLOGS_write("IP: ");
+        REMOTEXY__DEBUGLOGS.print(WiFi.localIP());
 #endif  
         startCloudConnection ();
       }
@@ -95,8 +92,7 @@ class CRemoteXY : public CRemoteXY_API {
     if (clientState) {
       if (client.connected()) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
         sendBuffer[sendBufferCount++] = b;
         sendBytesAvailable--;       
@@ -117,8 +113,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         b = client.read();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         return b;
       }

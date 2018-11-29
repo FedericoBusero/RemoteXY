@@ -25,11 +25,11 @@ class CRemoteXY : public CRemoteXY_API {
     delay(100);    
     rxy_getMacAddr (macAddress, mac);  
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.println("Ethernet connecting...");
+      DEBUGLOGS_write ("Ethernet connecting...");
 #endif
     if (Ethernet.begin(mac) == 0) {
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.println("Ethernet DHCP configuration failed");
+      DEBUGLOGS_write("Ethernet DHCP configuration failed");
 #endif
       return 0;
     }
@@ -37,10 +37,10 @@ class CRemoteXY : public CRemoteXY_API {
     server = new EthernetServer (port);
     server->begin();    
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println("Ethernet DHCP connected");
-    REMOTEXY__DEBUGLOGS.print("IP: ");
-    REMOTEXY__DEBUGLOGS.println(Ethernet.localIP());
-    REMOTEXY__DEBUGLOGS.println("Server started");
+    DEBUGLOGS_write("Ethernet DHCP connected");
+    DEBUGLOGS_write("IP: ");
+    REMOTEXY__DEBUGLOGS.print(Ethernet.localIP());
+    DEBUGLOGS_write("Server started");
 #endif
     return 1;
   }
@@ -52,9 +52,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client) {
         resetServerTimeOut ();  // new client
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ();
-        REMOTEXY__DEBUGLOGS.println ("Client connected");
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write ("Client connected");
 #endif
       }
     }
@@ -63,18 +61,14 @@ class CRemoteXY : public CRemoteXY_API {
         if (millis () - serverTimeOut > REMOTEXY_SERVER_TIMEOUT) {
           client.stop ();
 #if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println ();
-          REMOTEXY__DEBUGLOGS.println ("Client stoped by timeout");
-          REMOTEXY__DEBUGLOGS.print ("<-");
+          DEBUGLOGS_write ("Client stoped by timeout");
 #endif
         }
       }
       else {
         client.stop ();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ();
-        REMOTEXY__DEBUGLOGS.println ("Client stoped");
-        REMOTEXY__DEBUGLOGS.print ("<-");
+        DEBUGLOGS_write ("Client stoped");
 #endif
       }
     }        
@@ -87,8 +81,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         client.write(b);    
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
         resetServerTimeOut ();
       }
@@ -100,8 +93,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         b = client.read();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         resetServerTimeOut ();
         return b;
