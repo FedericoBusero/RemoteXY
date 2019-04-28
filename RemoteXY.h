@@ -1,6 +1,6 @@
 /* RemoteXY.h 
    A RemoteXY Library - Remote device control
-   version 2.3.4ESP32   
+   version 2.3.5ESP32   
    ===========================================================
    For use RemoteXY library visit website http://remotexy.com
    This website will help you use the library for configuring 
@@ -72,10 +72,11 @@
      - Fixed a bug where the length of all input variables more than 256;
      - Fixed a bug where millis() overflow in 50 days;
      - Fixed some bugs;
-   version 2.3.5
-     - Support for ESP32 WiFi;
-	 - Support for changed_flag;       
-*/
+   version 2.3.5  
+     - Fixed some bugs;
+   version 2.3.5ESP32
+     - Support for ESP32 (WiFi, BT, BLE);
+     - Support for changed_flag;       
 
 #ifndef _REMOTEXY_H_
 #define _REMOTEXY_H_

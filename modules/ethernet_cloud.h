@@ -25,18 +25,18 @@ class CRemoteXY : public CRemoteXY_API {
     delay(100);    
     rxy_getMacAddr (macAddress, mac);  
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.println("Ethernet connecting...");
+    DEBUGLOGS_write("Ethernet connecting...");
 #endif
     if (Ethernet.begin(mac) == 0) {
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.println("Ethernet DHCP configuration failed");
+      DEBUGLOGS_write("Ethernet DHCP configuration failed");
 #endif
       return 0;
     }  
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println("Ethernet DHCP connected");
-    REMOTEXY__DEBUGLOGS.print("IP: ");
-    REMOTEXY__DEBUGLOGS.println(Ethernet.localIP());
+    DEBUGLOGS_write("Ethernet DHCP connected");
+    DEBUGLOGS_write("IP: ");
+    REMOTEXY__DEBUGLOGS.print(Ethernet.localIP());
 #endif      
     delay(100);
     
@@ -64,8 +64,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         client.write(b);  
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
       }
       else stopCloud ();
@@ -77,8 +76,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         b = client.read();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         return b;
       }

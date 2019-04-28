@@ -33,8 +33,9 @@ public:
     connectAvailable=0;
     sendBytesAvailable=0;
     sendBytesLater=0;
-    init (_conf, _var, _accessPassword);
+    
     initCloud (_cloudServer, _cloudPort, _cloudToken);  
+    init (_conf, _var, _accessPassword);
     startCloudConnection ();
   }
 
@@ -43,18 +44,17 @@ public:
   uint8_t initModule () {
     
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println ("\r\nFind ESP module...");
+    DEBUGLOGS_write ("Find ESP module...");
 #endif     
 
-    uint8_t tryCount=10;
+    uint8_t tryCount=20;
     while (--tryCount>0) {
-      
       sendATCommand ("AT",0);
       if (waitATAnswer (AT_ANSWER_OK, 1000)) break;
     }
     if (tryCount==0) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ("\r\nESP module not found");
+      DEBUGLOGS_write ("ESP module not found");
 #endif     
       return 0;
     }
@@ -88,12 +88,14 @@ public:
     sendATCommand ("AT+CIPMUX=1",0);
     if (!waitATAnswer (AT_ANSWER_OK, 1000)) return 0;
     delay(100);
+    
     return 1;
   }
 
   int8_t connectServerCloud (char * _cloudServer, uint16_t _cloudPort) {
     char sport[6];    
     rxy_itos (_cloudPort, sport);
+    if (testATecho ()==2) setModule ();
     sendATCommand ("AT+CIPSTART=0,\"TCP\",\"", _cloudServer,"\",", sport,0);
     if (waitATAnswer (AT_ANSWER_OK, 10000)) clientState = 1;
     else clientState = 0;
@@ -119,8 +121,10 @@ public:
   
   //override AT
   void readyAT () {
-    setModule ();
-    startCloudConnection ();
+    if (moduleRunning) {
+      setModule ();
+      startCloudConnection ();
+    }
   }  
   
   //override AT
@@ -141,6 +145,7 @@ public:
     connectAvailable=size;
   }  
   
+  
   void sendStart (uint16_t len) {
     char s[6];
     if (clientState) {
@@ -160,8 +165,7 @@ public:
     if (sendBytesAvailable) {
       serial->write (b); 
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
       sendBytesAvailable--;
       if (!sendBytesAvailable) {
@@ -179,8 +183,7 @@ public:
         connectAvailable--;
         b = serial->read  ();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         return b;
       }

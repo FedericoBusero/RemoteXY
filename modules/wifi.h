@@ -34,12 +34,12 @@ class CRemoteXY : public CRemoteXY_API {
     
 #if defined(REMOTEXY__DEBUGLOGS)
     if (i) {
-      REMOTEXY__DEBUGLOGS.print("IP: ");
-      REMOTEXY__DEBUGLOGS.println(WiFi.localIP());
+      DEBUGLOGS_write("IP: ");
+      REMOTEXY__DEBUGLOGS.print(WiFi.localIP());
     }
     else {
-      REMOTEXY__DEBUGLOGS.print("Could not connect to ");
-      REMOTEXY__DEBUGLOGS.println(wifiSsid);
+      DEBUGLOGS_write("Could not connect to ");
+      REMOTEXY__DEBUGLOGS.print (wifiSsid);
     }
 #endif
     if (!i) return 0;
@@ -55,8 +55,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         client.write(b);
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
       }
     }
@@ -68,8 +67,7 @@ class CRemoteXY : public CRemoteXY_API {
       if (client.connected()) {
         b = client.read();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         return b;
       }

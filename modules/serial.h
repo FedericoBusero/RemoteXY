@@ -71,8 +71,7 @@ class CRemoteXY : public CRemoteXY_Serial {
     void sendByte (uint8_t b) {
       serial->write (b);
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.print(b, HEX);
-      REMOTEXY__DEBUGLOGS.print(' ');
+    DEBUGLOGS_writeOutputHex (b);
 #endif
     }
 #endif
@@ -80,8 +79,7 @@ class CRemoteXY : public CRemoteXY_Serial {
     uint8_t receiveByte () {
       uint8_t b = serial->read ();
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.print(b, HEX);
-      REMOTEXY__DEBUGLOGS.print(' ');
+    DEBUGLOGS_writeInputHex (b); 
 #endif
       return b;
     }

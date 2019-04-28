@@ -4,6 +4,7 @@
 #include "classes/RemoteXY_AT.h"
 
 #define REMOTEXY_ESP8266_MAX_SEND_BYTES 2048
+#define REMOTEXY_ESP8266_MODULETEST_TIMEOUT 30000
 
 class CRemoteXY : public CRemoteXY_AT {
 
@@ -17,6 +18,8 @@ protected:
 
   uint16_t sendBytesAvailable;  
   uint16_t sendBytesLater;
+  
+  uint32_t moduleTestTimeout;
 
 public:
 
@@ -37,6 +40,7 @@ public:
     sendBytesAvailable=0;
     sendBytesLater=0;
     init (_conf, _var, _accessPassword);
+    moduleTestTimeout = millis ();
   }
 
 
@@ -44,10 +48,10 @@ public:
   uint8_t initModule () {
     
 #if defined(REMOTEXY__DEBUGLOGS)
-    REMOTEXY__DEBUGLOGS.println ("\r\nFind ESP module...");
+    DEBUGLOGS_write ("Find ESP module...");
 #endif     
 
-    uint8_t tryCount=10;
+    uint8_t tryCount=20;
     while (--tryCount>0) {
       
       sendATCommand ("AT",0);
@@ -55,7 +59,7 @@ public:
     }
     if (tryCount==0) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.println ("\r\nESP module not found");
+      DEBUGLOGS_write ("ESP module not found");
 #endif     
       return 0;
     }
@@ -107,7 +111,7 @@ public:
     if (!waitATAnswer (AT_ANSWER_OK, 1000)) return 0; 
     sendATCommand ("AT+CIPSTO=",stimeout,0);
     if (!waitATAnswer (AT_ANSWER_OK, 1000)) return 0; 
-
+    moduleTestTimeout = millis ();
     return 1;
   }
 
@@ -115,9 +119,8 @@ public:
     
   void handlerModule () {
        
-    while (serial->available ()>0) {
-      
-      if (connectAvailable) return;
+    while (serial->available ()>0) {      
+      if (connectAvailable) break;
       if (freeAvailable) {
         serial->read ();
         freeAvailable--;
@@ -125,7 +128,15 @@ public:
       else {     
         readATMessage ();
       }
+      moduleTestTimeout = millis ();
     }
+    
+    
+    if (millis() - moduleTestTimeout > REMOTEXY_ESP8266_MODULETEST_TIMEOUT) {
+      moduleTestTimeout = millis ();
+      if (testATecho ()==2) setModule ();
+    }  
+    
   }
  
   //override AT
@@ -135,7 +146,7 @@ public:
 
   //override AT
   void connectAT () {
-    if (!connectCannel) {
+    if (connectCannel==0) {
       connectCannel=*(params[0]);
       connectAvailable=0;
     }
@@ -150,9 +161,10 @@ public:
   void inputDataAT () {
     uint16_t size;
     size=getATParamInt (1);
-    if (connectCannel==*(params[0])) connectAvailable=size;
+    if (connectCannel==*(params[0])) connectAvailable=size; 
     else freeAvailable = size;
   }
+  
   
   void sendStart (uint16_t len) {
     char s[8];
@@ -175,8 +187,7 @@ public:
     if (sendBytesAvailable) {
       serial->write (b); 
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeOutputHex (b);
 #endif
       sendBytesAvailable--;
       if (!sendBytesAvailable) {
@@ -194,8 +205,7 @@ public:
         connectAvailable--;
         b = serial->read  ();
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print (b, HEX);
-        REMOTEXY__DEBUGLOGS.print (' ');
+        DEBUGLOGS_writeInputHex (b);
 #endif
         return b;
       }
