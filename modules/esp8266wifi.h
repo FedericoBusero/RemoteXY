@@ -4,6 +4,9 @@
 /*
 for ESP8266 board;
 need include <ESP8266WiFi.h>;
+
+for ESP32 board;
+need include <WiFi.h>;
 */
 
 #include "classes/RemoteXY_API.h"
@@ -157,6 +160,7 @@ class CRemoteXY : public CRemoteXY_API {
         return b;
       }
     }
+    return 0;
   }
   
   uint8_t availableByte () {   
