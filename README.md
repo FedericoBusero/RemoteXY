@@ -1,6 +1,10 @@
 # RemoteXY
 Library for Arduino IDE of RemoteXY, the remote control app for graphical interfaces
 
+This version is not the official version of RemoteXY. This version is based on the official version 2.3.5, but has been extended with:
+- support for ESP32 (Wifi, BLE, Bluetooth classic)
+- support for changed flag
+
 Use the website http://remotexy.com/ to create your own management interface for your arduino with your smartphone or tablet. You can create different management interfaces. Use buttons, switches, sliders, joysticks (g-sensor) all colors and sizes in its interface. Next, you will be able to get the sample code for arduino to use your interface for control from a smartphone or tablet. You will not need to re-install the android app, as it will determine which interface you have downloaded the arduino.
 
 RemoteXY is easy way to make and use a mobile graphical user interface for controller boards to control via smartphone or tablet. The system includes:
