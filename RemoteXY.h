@@ -77,6 +77,7 @@
    version 2.3.5ESP32
      - Support for ESP32 (WiFi, BT, BLE);
      - Support for changed_flag;       
+*/
 
 #ifndef _REMOTEXY_H_
 #define _REMOTEXY_H_
