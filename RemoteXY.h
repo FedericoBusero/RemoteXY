@@ -133,9 +133,9 @@
 #elif defined(REMOTEXY_MODE__ESP32_BLE)
   #define REMOTEXY_MOD__ESP32_BLE_LIB
 #elif defined(REMOTEXY_MODE__ESP32WIFI_LIB)
-  #define REMOTEXY_MOD__ESP32WIFI_LIB  
+  #define REMOTEXY_MOD__ESP8266WIFI_LIB  
 #elif defined(REMOTEXY_MODE__ESP32WIFI_LIB_POINT) || defined(REMOTEXY_MODE__ESP32WIFIPOINT_LIB)
-  #define REMOTEXY_MOD__ESP32WIFI_LIB
+  #define REMOTEXY_MOD__ESP8266WIFI_LIB
   #define REMOTEXY_WIFI__POINT
 #else
   #error RemoteXY mode does not defined or defined error: REMOTEXY_MODE__XXXXXXX 
@@ -170,8 +170,6 @@
   #include "modules/esp8266wifi_cloud.h" 
 #elif defined(REMOTEXY_MOD__ESP32_BLE_LIB)
   #include "modules/esp32_ble.h"
-#elif defined(REMOTEXY_MOD__ESP32WIFI_LIB)
-  #include "modules/esp32wifi.h"   
 #endif 
 
 #ifndef REMOTEXY_ACCESS_PASSWORD 
