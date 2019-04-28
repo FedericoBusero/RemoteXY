@@ -27,6 +27,13 @@ public:
       serial->begin (_serialSpeed);
     }
   #endif
+#elif defined(REMOTEXY_PORT__ESP32_BT)
+  BluetoothSerial * serial;
+  void initSerial ( const char * _btDeviceName) {
+  String btDeviceName(_btDeviceName);
+      serial = new BluetoothSerial ();
+    serial->begin (btDeviceName);
+  }
 #endif
 };
 
