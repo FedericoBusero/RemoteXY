@@ -123,6 +123,9 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
           REMOTEXY__DEBUGLOGS.print(buf[i], HEX);
 #endif
         }
+#if defined(REMOTEXY__DEBUGLOGS)
+          REMOTEXY__DEBUGLOGS.println();
+#endif
         pRxTxCharacteristic->setValue((uint8_t *)buf, sendBufferCount);
         pRxTxCharacteristic->notify();
         sendBufferCount = 0;
