@@ -20,15 +20,15 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
 
     CRemoteXY (const void * _conf, void * _var, const char * _accessPassword, const char * _bleDeviceName) {
       init (_conf, _var, _accessPassword);
-	  initModule(_bleDeviceName);
-    }
-
-    uint8_t initModule (const char * _bleDeviceName) {
-
 #if defined(REMOTEXY__DEBUGLOGS)
-      REMOTEXY__DEBUGLOGS.println("ESP32 initModule");
+      REMOTEXY__DEBUGLOGS.println("init BLE Module");
 #endif
 
+      this->sendBytesAvailable = 0;
+      this->sendBufferCount = 0;
+
+      this->currentValueIndex = 0;
+	    
       // Create the BLE Device
       BLEDevice::init(_bleDeviceName);
 
@@ -62,7 +62,6 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
 #if defined(REMOTEXY__DEBUGLOGS)
       REMOTEXY__DEBUGLOGS.println("Waiting a client connection to notify...");
 #endif
-      return 1;
     }
 
     void onConnect(BLEServer* pServer) {
@@ -89,9 +88,9 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
           REMOTEXY__DEBUGLOGS.print(" ");
         }
         REMOTEXY__DEBUGLOGS.println();
+        REMOTEXY__DEBUGLOGS.flush();
 #endif
-        currentValue = rxValue;
-        currentValueIndex = 0;
+        currentValue += rxValue;
       }
     }
 
@@ -109,24 +108,17 @@ class CRemoteXY : public CRemoteXY_API, BLEServerCallbacks, BLECharacteristicCal
       sendBuffer[sendBufferCount++] = b;
       sendBytesAvailable--;
       if ((sendBufferCount == REMOTEXY_SEND_BUFFER_LENGTH) || (sendBytesAvailable == 0)) {
-        uint8_t buf[sendBufferCount];
-
 #if defined(REMOTEXY__DEBUGLOGS)
         REMOTEXY__DEBUGLOGS.print("Sendbyte:");
-#endif
-
         for (uint16_t i = 0; i < sendBufferCount; i++)
         {
-          buf[i] = sendBuffer[i];
-#if defined(REMOTEXY__DEBUGLOGS)
           REMOTEXY__DEBUGLOGS.print(" ");
-          REMOTEXY__DEBUGLOGS.print(buf[i], HEX);
-#endif
+          REMOTEXY__DEBUGLOGS.print(sendBuffer[i], HEX);
         }
-#if defined(REMOTEXY__DEBUGLOGS)
-          REMOTEXY__DEBUGLOGS.println();
+        REMOTEXY__DEBUGLOGS.println();
+        REMOTEXY__DEBUGLOGS.flush();
 #endif
-        pRxTxCharacteristic->setValue((uint8_t *)buf, sendBufferCount);
+        pRxTxCharacteristic->setValue((uint8_t *)sendBuffer, sendBufferCount);
         pRxTxCharacteristic->notify();
         sendBufferCount = 0;
       }
