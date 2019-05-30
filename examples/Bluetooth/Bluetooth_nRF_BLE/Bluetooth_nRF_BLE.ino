@@ -52,7 +52,7 @@ struct {
 //           END RemoteXY include          //
 /////////////////////////////////////////////
 
-#define LED_BUILTIN 2
+#define PIN_P2 2
 
 void setup()
 {
@@ -64,7 +64,7 @@ void setup()
 
   RemoteXY_Init ();
 
-  pinMode (LED_BUILTIN, OUTPUT);
+  pinMode (PIN_P2, OUTPUT);
 
 }
 
@@ -72,6 +72,6 @@ void loop()
 {
   RemoteXY_Handler ();
 
-  digitalWrite(LED_BUILTIN, (RemoteXY.button_1 == 0) ? LOW : HIGH);
+  digitalWrite(PIN_P2, (RemoteXY.button_1 == 0) ? LOW : HIGH);
 
 }
