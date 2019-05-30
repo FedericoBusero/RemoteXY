@@ -17,7 +17,7 @@
 void CRemoteXY_onConnect(BLECentral& central);
 void CRemoteXY_onDisconnect(BLECentral& central);
 
-// unsigned char descr[]={0x01,0x00};
+unsigned char descr[]={0x01,0x00};
 
 class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 
@@ -45,7 +45,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
       addAttribute(this->pService);
       setAdvertisedServiceUuid(this->pService.uuid());
       addAttribute(this->pRxTxCharacteristic);
-	  // addAttribute(descriptor);
+      addAttribute(descriptor);
 	  
       this->pRxTxCharacteristic.setEventHandler(BLEWritten, CRemoteXY::onWrite);
       
@@ -166,7 +166,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
   private:
     BLEService pService = BLEService(SERVICE_UUID);
     BLECharacteristic    pRxTxCharacteristic  = BLECharacteristic(CHARACTERISTIC_UUID_RXTX, BLERead|BLEWriteWithoutResponse|BLENotify, BLE_ATTRIBUTE_MAX_VALUE_LENGTH );
-    // BLEDescriptor descriptor = BLEDescriptor("2902", descr, 2);
+    BLEDescriptor descriptor = BLEDescriptor("2902", descr, 2);
 
 	public:
 	    static CRemoteXY* _instance;
