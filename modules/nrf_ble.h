@@ -17,8 +17,6 @@
 void CRemoteXY_onConnect(BLECentral& central);
 void CRemoteXY_onDisconnect(BLECentral& central);
 
-unsigned char descr[]={0x01,0x00};
-
 class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 
   public:
