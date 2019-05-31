@@ -45,17 +45,13 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
       addAttribute(this->pService);
       setAdvertisedServiceUuid(this->pService.uuid());
       addAttribute(this->pRxTxCharacteristic);
-      addAttribute(descriptor);
 	  
       this->pRxTxCharacteristic.setEventHandler(BLEWritten, CRemoteXY::onWrite);
       
       this->setEventHandler(BLEConnected, CRemoteXY_onConnect);
       this->setEventHandler(BLEDisconnected, CRemoteXY_onDisconnect);
 
-      // this->pRxTxCharacteristic.setValue(0);
-
       BLEPeripheral::begin();
-	  // BLEPeripheral::poll();
 #if defined(REMOTEXY__DEBUGLOGS)
       REMOTEXY__DEBUGLOGS.println("Waiting a client connection to notify...");
 #endif
@@ -166,7 +162,6 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
   private:
     BLEService pService = BLEService(SERVICE_UUID);
     BLECharacteristic    pRxTxCharacteristic  = BLECharacteristic(CHARACTERISTIC_UUID_RXTX, BLERead|BLEWriteWithoutResponse|BLENotify, BLE_ATTRIBUTE_MAX_VALUE_LENGTH );
-    BLEDescriptor descriptor = BLEDescriptor("2902", descr, 2);
 
 	public:
 	    static CRemoteXY* _instance;
