@@ -16,14 +16,16 @@
   android app, as it will determine which interface you have
   downloaded the arduino.
 
+  This example uses the library arduino-BLEPeripheral to use BLE on nRF51822 chips. 
+    source: https://github.com/sandeepmistry/arduino-BLEPeripheral
+  
 */
 
 /////////////////////////////////////////////
 //        RemoteXY include library         //
 /////////////////////////////////////////////
 
-
-#define REMOTEXY__DEBUGLOGS Serial
+// #define REMOTEXY__DEBUGLOGS Serial
 
 // RemoteXY select connection mode and include library
 #define REMOTEXY_MODE__NRF_BLE
@@ -34,8 +36,8 @@
 
 // RemoteXY configurate
 unsigned char RemoteXY_CONF[] =
-  { 255,1,0,0,0,13,0,8,13,0,
-  1,0,38,12,12,12,2,31,88,0 }; 
+  { 1,0,11,0,1,5,1,0,21,2
+  ,59,59,2,88,0 }; 
 
 // this structure defines all the variables of your control interface
 struct {
@@ -61,11 +63,9 @@ void setup()
   REMOTEXY__DEBUGLOGS.println("RemoteXY nRF test program");
 #endif
 
-
   RemoteXY_Init ();
 
   pinMode (PIN_P2, OUTPUT);
-
 }
 
 void loop()
