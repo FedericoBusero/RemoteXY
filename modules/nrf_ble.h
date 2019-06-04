@@ -29,7 +29,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 #endif
       init (_conf, _var, _accessPassword);
 
-	  this->sendBytesAvailable = 0;
+      this->sendBytesAvailable = 0;
       this->sendBufferCount = 0;
 	  
       this->_rxHead = this->_rxTail = 0;
@@ -44,8 +44,6 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
       setAdvertisedServiceUuid(this->pService.uuid());
       addAttribute(this->pRxTxCharacteristic);
 	  
-      this->pRxTxCharacteristic.setEventHandler(BLEWritten, CRemoteXY::onWrite);
-      
       this->setEventHandler(BLEConnected, CRemoteXY_onConnect);
       this->setEventHandler(BLEDisconnected, CRemoteXY_onDisconnect);
 
@@ -67,11 +65,11 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 #endif
     }
 
-    void onWrite(const uint8_t* data, size_t size) {
+    virtual void BLEDeviceCharacteristicValueChanged(BLEDevice& device, BLECharacteristic& characteristic, const unsigned char* data, unsigned char size) {
       if (size > 0) {
 #if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print("onWrite: ");
-        for (size_t i = 0; i < size; i++)
+        REMOTEXY__DEBUGLOGS.print("BLEDeviceCharacteristicValueChanged: ");
+        for (unsigned char i = 0; i < size; i++)
         {
           REMOTEXY__DEBUGLOGS.print((uint8_t)data[i], HEX);
           REMOTEXY__DEBUGLOGS.print(" ");
@@ -82,7 +80,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
           this->_rxHead = (this->_rxHead + 1) % sizeof(this->_rxBuffer);
           this->_rxBuffer[this->_rxHead] = data[i];
         }      
-	  }
+      }
     }
 
   protected:
@@ -121,16 +119,16 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 #if defined(REMOTEXY__DEBUGLOGS)
         REMOTEXY__DEBUGLOGS.println("tx characteristic not subscribed");
 #endif
-		//	return;
+			return;
 		}
 		
         bool ret;
-		ret = pRxTxCharacteristic.setValue((uint8_t *)sendBuffer, sendBufferCount);
+        ret = pRxTxCharacteristic.setValue((uint8_t *)sendBuffer, sendBufferCount);
 #if defined(REMOTEXY__DEBUGLOGS)
         REMOTEXY__DEBUGLOGS.print("setValue: ");
         REMOTEXY__DEBUGLOGS.println(ret);
 #endif		
-		BLEPeripheral::poll();
+        BLEPeripheral::poll();
         sendBufferCount = 0;
       }
     }
@@ -150,12 +148,6 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 
       return retval;
     };
-
-    static void onWrite(BLECentral& /*central*/, BLECharacteristic& rxCharacteristic)
-	{
-      CRemoteXY::_instance->onWrite(rxCharacteristic.value(), rxCharacteristic.valueLength());
-	}
-
 
   private:
     BLEService pService = BLEService(SERVICE_UUID);
