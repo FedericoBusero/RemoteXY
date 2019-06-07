@@ -124,10 +124,6 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 		
         bool ret;
         ret = pRxTxCharacteristic.setValue((uint8_t *)sendBuffer, sendBufferCount);
-#if defined(REMOTEXY__DEBUGLOGS)
-        REMOTEXY__DEBUGLOGS.print("setValue: ");
-        REMOTEXY__DEBUGLOGS.println(ret);
-#endif		
         BLEPeripheral::poll();
         sendBufferCount = 0;
       }
