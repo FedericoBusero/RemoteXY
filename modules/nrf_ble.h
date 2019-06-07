@@ -63,6 +63,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
 #if defined(REMOTEXY__DEBUGLOGS)
       REMOTEXY__DEBUGLOGS.println("onDisconnect");
 #endif
+      wireTimeOut=0; // force  resetWire to put connect_flag immediately off
     }
 
     virtual void BLEDeviceCharacteristicValueChanged(BLEDevice& device, BLECharacteristic& characteristic, const unsigned char* data, unsigned char size) {
