@@ -19,7 +19,7 @@ class CRemoteXY : public CRemoteXY_API, public BLEPeripheral {
   public:
 
     CRemoteXY (const void * _conf, void * _var, const char * _accessPassword, const char * _bleDeviceName) :
-      BLEPeripheral(0, 0, 0)
+      BLEPeripheral()
     {
 #if defined(REMOTEXY__DEBUGLOGS)
       REMOTEXY__DEBUGLOGS.println("nRF initModule");
