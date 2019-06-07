@@ -19,6 +19,8 @@
   This example uses the library arduino-BLEPeripheral to use BLE on nRF51822 chips. 
     source: https://github.com/sandeepmistry/arduino-BLEPeripheral
   
+  Select Softdevice S110 in the Arduino IDE
+  
 */
 
 /////////////////////////////////////////////
